@@ -1,7 +1,6 @@
 package caddy_pirsch_plugin
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
@@ -40,12 +39,20 @@ func (m *PirschPlugin) Provision(ctx caddy.Context) (err error) {
 }
 
 func (m *PirschPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-	r2 := r.Clone(context.TODO())
+	request := r.Clone(r.Context())
 	go func(r *http.Request) {
-		if err := m.client.PageView(r, nil); err != nil {
+		clientIP, ok := caddyhttp.GetVar(r.Context(), caddyhttp.ClientIPVarKey).(string)
+
+		if !ok || clientIP == "" {
+			clientIP = r.RemoteAddr
+		}
+
+		if err := m.client.PageView(r, &pirsch.PageViewOptions{
+			IP: clientIP,
+		}); err != nil {
 			m.logger.Error("failed sending page view to pirsch: %v", zap.Error(err))
 		}
-	}(r2)
+	}(request)
 	return next.ServeHTTP(w, r)
 }
 

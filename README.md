@@ -39,6 +39,8 @@ route {
 
 Track all requests to HTML pages in Pirsch. You might want to extend the matcher regexp to also include `/` or, alternatively, match everything but assets (like `.css`, `.js`, ...) since usually you wouldn't want to track those.
 
+`client ID` is optional when using an access key (recommended).
+
 ```
 {
     order pirsch before file_server

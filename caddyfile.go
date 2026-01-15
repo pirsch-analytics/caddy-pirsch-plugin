@@ -3,6 +3,7 @@ package caddy_pirsch_plugin
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
@@ -55,8 +56,10 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 		}
 	}
 
-	if p.ClientId == "" || p.ClientSecret == "" {
-		return nil, fmt.Errorf("missing configuration option (one of 'client_id', 'client_secret')")
+	if p.ClientId == "" && p.ClientSecret != "" && !strings.HasPrefix(p.ClientSecret, "pa_") {
+		return nil, fmt.Errorf("invalid access key, it must start with 'pa_'")
+	} else if p.ClientId == "" && p.ClientSecret == "" {
+		return nil, fmt.Errorf("the client ID or secret is missing (oAuth)")
 	}
 
 	return p, nil
